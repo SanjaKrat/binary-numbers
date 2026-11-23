@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Вісім лампочок</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+/* VOICE: дружній, класний, для проєктора і 7-го класу.
+   IDEA: щиток із вимикачами — байт пам'яті, де кожна лампочка є бітом.
+   PICTURE: великий ряд лампочок із вагами розрядів, що світяться при кліку.
+   COLOUR and TYPE: тепле світло лампочок #ffc928 на графітовій панелі, синій акцент #2f6bff; Nunito.
+   LAYOUT: панель лампочок на всю ширину, під нею велике число й розклад суми, далі вправи. */
+:root{color-scheme:light dark;
+--bg:light-dark(#f4f6fa,#0f141c);--ink:light-dark(#14202f,#e8eef7);--muted:light-dark(#566578,#9fb0c6);
+--panel:light-dark(#1d2633,#151c27);--panel2:light-dark(#27324200,#1d2634);--card:light-dark(#ffffff,#18202c);
+--line:light-dark(#d6dee9,#2a3546);--on:#ffc928;--glow:rgba(255,201,40,.55);--accent:#2f6bff;--ok:#1f9d63;--bad:#d6453a}
+:root[data-theme=light]{color-scheme:light}:root[data-theme=dark]{color-scheme:dark}
+*{box-sizing:border-box;min-width:0}
+body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.55 Nunito,system-ui,sans-serif;overflow-x:clip}
+.band{padding:clamp(22px,3.5vw,48px) max(4vw,16px);max-width:1240px;margin:0 auto}
+h1{font-size:clamp(30px,4vw,46px);line-height:1.05;margin:0 0 6px;font-weight:900;text-wrap:balance}
+.sub{color:var(--muted);margin:0 0 18px;max-width:62ch}
+.board{background:var(--panel);border-radius:24px;padding:clamp(16px,2.5vw,30px);color:#e8eef7;box-shadow:0 18px 40px -24px #0008}
+.bulbs{display:grid;gap:clamp(6px,1.2vw,16px)}
+.bulb{appearance:none;border:0;background:none;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:8px;padding:6px 0;color:inherit;font:inherit;border-radius:16px}
+.bulb:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.w{font-weight:900;font-size:clamp(16px,2.4vw,26px);color:#9fb0c6;transition:color .2s}
+.glass{width:clamp(30px,7vw,78px);aspect-ratio:1/1.2;border-radius:50% 50% 46% 46%;background:radial-gradient(circle at 35% 30%,#4a5568,#2a3342 70%);border:2px solid #3b4658;transition:background .2s,box-shadow .2s;position:relative}
+.base{width:clamp(16px,3.4vw,38px);height:clamp(8px,1.6vw,16px);background:repeating-linear-gradient(#8c96a6 0 3px,#5f6a7c 3px 6px);border-radius:0 0 6px 6px;margin-top:-8px}
+.bit{font-weight:900;font-size:clamp(22px,3.4vw,40px);font-variant-numeric:tabular-nums}
+.bulb.on .glass{background:radial-gradient(circle at 38% 32%,#fff7d1,var(--on) 55%,#e89b00);border-color:#ffe07a;box-shadow:0 0 28px 8px var(--glow)}
+.bulb.on .w{color:var(--on)}
+.result{display:grid;grid-template-columns:auto minmax(0,1fr);gap:clamp(14px,3vw,40px);align-items:center;margin-top:22px;padding-top:20px;border-top:1px dashed #3b4658}
+.big{font-size:clamp(56px,10vw,120px);font-weight:900;line-height:.95;color:var(--on);font-variant-numeric:tabular-nums}
+.bin{font-size:clamp(20px,3vw,32px);font-weight:800;letter-spacing:.12em;color:#e8eef7;font-variant-numeric:tabular-nums}
+.sum{color:#9fb0c6;font-size:clamp(16px,2vw,20px);margin-top:4px}
+.tools{display:flex;flex-wrap:wrap;gap:10px;margin-top:18px}
+button.b{min-height:44px;padding:8px 16px;border-radius:12px;border:2px solid var(--line);background:var(--card);color:var(--ink);font:700 16px Nunito,sans-serif;cursor:pointer}
+.board button.b{background:#27324a;border-color:#3b4658;color:#e8eef7}
+button.b.pri{background:var(--accent);border-color:var(--accent);color:#fff}
+button.b[aria-pressed=true]{background:var(--on);border-color:var(--on);color:#14202f}
+button.b:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px;margin-top:18px}
+.card{background:var(--card);border:2px solid var(--line);border-radius:18px;padding:18px 20px}
+.card h2{font-size:22px;margin:0 0 8px;line-height:1.2}
+.card p{margin:6px 0}
+.sw{display:flex;gap:14px;align-items:center}
+.swatch{width:64px;height:64px;border-radius:12px;border:2px solid var(--line);flex:none}
+.letter{width:64px;height:64px;border-radius:12px;border:2px solid var(--line);display:grid;place-items:center;font-size:36px;font-weight:900;flex:none;background:var(--bg)}
+.muted{color:var(--muted)}
+.target{font-size:44px;font-weight:900;color:var(--accent);line-height:1}
+input.n{width:120px;min-height:44px;font:800 22px Nunito,sans-serif;padding:4px 10px;border-radius:12px;border:2px solid var(--line);background:var(--bg);color:var(--ink)}
+input.n:focus-visible{outline:3px solid var(--accent)}
+.msg{font-weight:800;min-height:1.6em}.msg.ok{color:var(--ok)}.msg.bad{color:var(--bad)}
+.pat{font-size:30px;font-weight:900;letter-spacing:.14em;font-variant-numeric:tabular-nums}
+table{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums}
+td,th{padding:6px 8px;border-bottom:1px solid var(--line);text-align:left}
+td:last-child,th:last-child{text-align:right}
+@media(max-width:600px){.result{grid-template-columns:1fr}.big{font-size:64px}}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="band">
+  <h1>Вісім лампочок = один байт</h1>
+  <p class="sub">Кожна лампочка — це <b>біт</b>: світить — 1, не світить — 0. Над лампочкою — скільки вона «важить». Натискайте на лампочки й дивіться, яке число вийде.</p>
+
+  <section class="board" aria-label="Панель із лампочками">
+    <div class="bulbs" id="bulbs"></div>
+    <div class="result">
+      <div class="big" id="dec" aria-live="polite">0</div>
+      <div>
+        <div class="bin" id="bin">00000000</div>
+        <div class="sum" id="sum">Жодна лампочка не світить — це 0.</div>
+      </div>
+    </div>
+    <div class="tools">
+      <button class="b" id="m4" aria-pressed="false">4 лампочки</button>
+      <button class="b" id="m8" aria-pressed="true">8 лампочок</button>
+      <button class="b" id="plus">+1</button>
+      <button class="b" id="all">Увімкнути всі</button>
+      <button class="b" id="clr">Вимкнути всі</button>
+    </div>
+  </section>
+
+  <div class="grid">
+    <div class="card">
+      <h2>Скільки варіантів?</h2>
+      <p id="combo"></p>
+      <p class="muted" id="combo2"></p>
+    </div>
+    <div class="card">
+      <h2>Що може означати цей байт</h2>
+      <div class="sw"><div class="swatch" id="gray"></div><p id="grayT"></p></div>
+      <div class="sw" style="margin-top:10px"><div class="letter" id="let"></div><p id="letT"></p></div>
+    </div>
+  </div>
+
+  <div class="grid">
+    <div class="card">
+      <h2>Завдання 1. Збери число</h2>
+      <p>Увімкніть лампочки так, щоб вийшло:</p>
+      <div class="target" id="tgt">13</div>
+      <p class="msg" id="tmsg"></p>
+      <button class="b pri" id="tnew">Інше число</button>
+    </div>
+    <div class="card">
+      <h2>Завдання 2. Яке це число?</h2>
+      <p>Переведіть двійковий запис у звичайне число:</p>
+      <div class="pat" id="pat">00000101</div>
+      <form id="pform" style="display:flex;gap:10px;flex-wrap:wrap;margin-top:8px">
+        <label class="muted" for="pin" style="align-self:center">Відповідь:</label>
+        <input class="n" id="pin" inputmode="numeric" autocomplete="off">
+        <button class="b pri" type="submit">Перевірити</button>
+        <button class="b" type="button" id="pnew">Інший запис</button>
+      </form>
+      <p class="msg" id="pmsg"></p>
+    </div>
+  </div>
+
+  <div class="grid">
+    <div class="card">
+      <h2>Чому 1 КБ = 1024 байти</h2>
+      <p>Комп'ютер рахує подвоєннями: 1, 2, 4, 8, 16, 32, 64, 128, 256, 512, <b>1024</b>. Число 1024 — найближче до тисячі, тому його й назвали «кіло».</p>
+      <table><tr><th>Одиниця</th><th>Скільки</th></tr>
+        <tr><td>1 байт</td><td>8 біт</td></tr>
+        <tr><td>1 КБ</td><td>1024 байти</td></tr>
+        <tr><td>1 МБ</td><td>1024 КБ</td></tr>
+        <tr><td>1 ГБ</td><td>1024 МБ</td></tr></table>
+    </div>
+    <div class="card">
+      <h2>Підказка: як переводити</h2>
+      <p><b>З двійкового у звичайне:</b> додайте ваги лампочок, що світять (де стоїть 1).</p>
+      <p><b>Зі звичайного у двійкове:</b> беріть найбільшу вагу, яка ще «влазить» у число, вмикайте її і віднімайте. Повторюйте, доки не залишиться 0.</p>
+      <p class="muted">Приклад: 13 → 8 (лишилось 5) → 4 (лишилось 1) → 1. Отже, 13 = 1101.</p>
+    </div>
+  </div>
+</div>
+
+<script>
+{
+  let n = 8;
+  let bits = Array(8).fill(0);
+  const $ = id => document.getElementById(id);
+  const bulbsEl = $('bulbs');
+
+  const value = () => bits.slice(8 - n).reduce((a, b, i) => a + b * 2 ** (n - 1 - i), 0);
+  const setValue = v => { for (let i = 0; i < n; i++) bits[8 - n + i] = (v >> (n - 1 - i)) & 1; };
+
+  function render() {
+    const act = bits.slice(8 - n);
+    bulbsEl.style.gridTemplateColumns = `repeat(${n},minmax(0,1fr))`;
+    bulbsEl.innerHTML = act.map((b, i) => {
+      const w = 2 ** (n - 1 - i);
+      return `<button class="bulb ${b ? 'on' : ''}" data-i="${i}" aria-pressed="${!!b}" aria-label="Лампочка вагою ${w}: ${b ? 'світить' : 'не світить'}">
+        <span class="w">${w}</span><span class="glass"></span><span class="base"></span><span class="bit">${b}</span></button>`;
+    }).join('');
+    const v = value();
+    $('dec').textContent = v;
+    $('bin').textContent = act.join('');
+    const parts = act.map((b, i) => b ? 2 ** (n - 1 - i) : 0).filter(Boolean);
+    $('sum').textContent = parts.length === 0 ? 'Жодна лампочка не світить — це 0.'
+      : parts.length === 1 ? `Світить лише лампочка ${parts[0]} — це ${v}.` : `${parts.join(' + ')} = ${v}`;
+    const total = 2 ** n;
+    $('combo').innerHTML = `${n} лампочок → <b>${total}</b> різних комбінацій: від 0 до <b>${total - 1}</b>.`;
+    $('combo2').textContent = n === 8
+      ? 'Тому в одному байті найбільше число — 255: усі вісім лампочок світять (128+64+32+16+8+4+2+1). Разом із нулем — 256 варіантів.'
+      : 'Кожна нова лампочка подвоює кількість варіантів: 2, 4, 8, 16…';
+    const g = n === 8 ? v : Math.round(v * 255 / 15);
+    $('gray').style.background = `rgb(${g},${g},${g})`;
+    $('grayT').innerHTML = n === 8 ? `Яскравість <b>${v}</b> з 255: так зберігають один колір пікселя (R, G або B).`
+      : `Відтінок сірого (4 біти — лише 16 відтінків).`;
+    const ch = v >= 33 && v <= 126 ? String.fromCharCode(v) : '';
+    $('let').textContent = ch || '—';
+    $('letT').innerHTML = ch ? `Як код символу це <b>«${ch}»</b>. Наприклад, 65 — це «A».`
+      : 'Як код символу: спробуйте 65 (A), 66 (B) або 97 (a).';
+    $('m4').setAttribute('aria-pressed', n === 4);
+    $('m8').setAttribute('aria-pressed', n === 8);
+    check();
+  }
+
+  bulbsEl.addEventListener('click', e => {
+    const b = e.target.closest('.bulb'); if (!b) return;
+    const i = 8 - n + +b.dataset.i; bits[i] = 1 - bits[i]; render();
+    const nb = bulbsEl.querySelector(`[data-i="${b.dataset.i}"]`); if (nb) nb.focus();
+  });
+  $('plus').onclick = () => { setValue((value() + 1) % 2 ** n); render(); };
+  $('all').onclick = () => { setValue(2 ** n - 1); render(); };
+  $('clr').onclick = () => { setValue(0); render(); };
+  $('m4').onclick = () => { const v = value() % 16; n = 4; bits = Array(8).fill(0); setValue(v); newTarget(); newPattern(); render(); };
+  $('m8').onclick = () => { const v = value(); n = 8; bits = Array(8).fill(0); setValue(v); newTarget(); newPattern(); render(); };
+
+  let target = 13;
+  function newTarget() { let t; do { t = 1 + Math.floor(Math.random() * (2 ** n - 1)); } while (t === target); target = t; $('tgt').textContent = t; $('tmsg').textContent = ''; check(); }
+  function check() {
+    const m = $('tmsg');
+    if (value() === target) { m.textContent = 'Правильно! ✓'; m.className = 'msg ok'; }
+    else { m.textContent = value() > target ? 'Забагато — вимкніть якусь лампочку.' : 'Поки замало.'; m.className = 'msg'; }
+  }
+  $('tnew').onclick = newTarget;
+
+  let pv = 5;
+  function newPattern() { pv = Math.floor(Math.random() * 2 ** n); $('pat').textContent = pv.toString(2).padStart(n, '0'); $('pin').value = ''; $('pmsg').textContent = ''; }
+  $('pnew').onclick = newPattern;
+  $('pform').addEventListener('submit', e => {
+    e.preventDefault();
+    const a = parseInt($('pin').value, 10), m = $('pmsg');
+    if (Number.isNaN(a)) { m.textContent = 'Введіть число.'; m.className = 'msg bad'; return; }
+    if (a === pv) { m.textContent = 'Правильно! ✓'; m.className = 'msg ok'; }
+    else { m.textContent = 'Ще раз: додайте ваги тих розрядів, де стоїть 1.'; m.className = 'msg bad'; }
+  });
+
+  render();
+}
+</script>
+</body>
+</html>
